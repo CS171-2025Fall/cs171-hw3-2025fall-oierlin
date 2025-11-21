@@ -1,4 +1,4 @@
-#include "rdr/accel.h"
+﻿#include "rdr/accel.h"
 
 #include "rdr/canary.h"
 #include "rdr/interaction.h"
@@ -43,7 +43,33 @@ bool AABB::intersect(const Ray &ray, Float *t_in, Float *t_out) const {
   //    for getting the inverse direction of the ray.
   // @see Min/Max/ReduceMin/ReduceMax
   //    for vector min/max operations.
-  UNIMPLEMENTED;
+
+  const Vec3f &inv_dir = ray.safe_inverse_direction;
+
+  Float t_min, t_max;
+
+  Float tx1 = (low_bnd.x - ray.origin.x) * inv_dir.x;
+  Float tx2 = (upper_bnd.x - ray.origin.x) * inv_dir.x;
+  t_min     = Min(tx1, tx2);
+  t_max     = Max(tx1, tx2);
+
+  Float ty1 = (low_bnd.y - ray.origin.y) * inv_dir.y;
+  Float ty2 = (upper_bnd.y - ray.origin.y) * inv_dir.y;
+  t_min     = Max(t_min, Min(ty1, ty2));
+  t_max     = Min(t_max, Max(ty1, ty2));
+
+  Float tz1 = (low_bnd.z - ray.origin.z) * inv_dir.z;
+  Float tz2 = (upper_bnd.z - ray.origin.z) * inv_dir.z;
+  t_min     = Max(t_min, Min(tz1, tz2));
+  t_max     = Min(t_max, Max(tz1, tz2));
+
+  if (t_min <= t_max && t_max >= ray.t_min && t_min <= ray.t_max) {
+    *t_in  = Max(t_min, ray.t_min);
+    *t_out = Min(t_max, ray.t_max);
+    return true;
+  }
+
+  return false;
 }
 
 /* ===================================================================== *
@@ -91,11 +117,37 @@ bool TriangleIntersect(Ray &ray, const uint32_t &triangle_index,
   // Useful Functions:
   // You can use @see Cross and @see Dot for determinant calculations.
 
-  // Delete the following lines after you implement the function
-  InternalScalarType u = InternalScalarType(0);
-  InternalScalarType v = InternalScalarType(0);
-  InternalScalarType t = InternalScalarType(0);
-  UNIMPLEMENTED;
+  InternalVecType edge1 = v1 - v0;
+  InternalVecType edge2 = v2 - v0;
+
+  InternalVecType pvec   = Cross(dir, edge2);
+  InternalScalarType det = Dot(edge1, pvec);
+
+  if (std::abs(det) < InternalScalarType(1e-8)) {
+    return false;
+  }
+
+  InternalScalarType inv_det = InternalScalarType(1) / det;
+
+  InternalVecType tvec = Cast<InternalScalarType>(ray.origin) - v0;
+  InternalScalarType u = Dot(tvec, pvec) * inv_det;
+
+  if (u < InternalScalarType(0) || u > InternalScalarType(1)) {
+    return false;
+  }
+
+  InternalVecType qvec = Cross(tvec, edge1);
+  InternalScalarType v = Dot(dir, qvec) * inv_det;
+
+  if (v < InternalScalarType(0) || u + v > InternalScalarType(1)) {
+    return false;
+  }
+
+  InternalScalarType t = Dot(edge2, qvec) * inv_det;
+
+  if (t < InternalScalarType(ray.t_min) || t > InternalScalarType(ray.t_max)) {
+    return false;
+  }
 
   // We will reach here if there is an intersection
 

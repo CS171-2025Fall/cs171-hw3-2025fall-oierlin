@@ -25,6 +25,7 @@
 % Title portion
 \title{Assignment 1:\\ {Exploring OpenGL Programming}} 
 
+
 \author{Name: Lin Jiale \quad \\ student number: 2022533043 \
 \\email: \quad \texttt{linjl2022@shanghaitech.edu.cn}}
 
@@ -35,8 +36,66 @@
 \vspace*{2 ex}
 
 \section{Introduction}
+
+\subsection{Ray-Triangle Intersection}
+
+Complete the implementation of the ray-triangle intersection function \texttt{TriangleIntersect} in \texttt{src/accel.cpp}.
+
+\subsection{Ray-AABB Intersection}
+
+Complete the AABB (Axis-Aligned Bounding Box) intersection in the function \texttt{AABB::intersect} in the file \texttt{src/accel.cpp}.
+
+\subsection{BVH Construction}
+
+Implement BVH Construction.
+
+\subsection{Direct Illumination Integrator}
+
+Implement the IntersectionTestIntegrator class.
+
+\subsection{Integrate with Refractive Materials}
+
+Add support for refractive materials in the IntersectionTestIntegrator class.
+
 \section{Implementation Details}
+
+\subsection{Ray-Triangle Intersection}
+
+Through the calculation of the intersection point of the ray and the triangle plane in the triangle coordinate system, determine whether the point is inside the triangle.
+
+\subsection{Ray-AABB Intersection}
+
+Calculate the intersection time of the ray and the three pairs of parallel planes of the AABB.
+If the ray intersects the AABB, return true.
+Otherwise, return false.
+
+\subsection{BVH Construction}
+
+Build the BVH tree using the median split method.
+
+\subsection{Direct Illumination Integrator}
+
+For every pixel it spawns one camera ray per sample; the ray is traced until it hits either an ideal-diffuse or a perfect-refraction surface.  
+Specular refractions are followed recursively by sampling the BSDF and spawning a new ray, while diffuse surfaces terminate the path.  
+Once a diffuse hit is found, direct illumination from the single point light is computed: a shadow ray is cast toward the light position and, if unoccluded, the reflected radiance is estimated with a simple Lambertian model—albedo from \texttt{bsdf->evaluate} multiplied by the clamped cosine between the surface normal and the light direction.  
+All other surface types are ignored, so only direct lighting on ideal-diffuse surfaces contributes to the final pixel color.
+
+\subsection{Integrate with Refractive Materials}
+
+Judge whether it is a total reflection to call refraction or reflection.
+
 \section{Results}
 
-\end{document}
+\subsection{Ray-Triangle Intersection \& Ray-AABB Intersection}
 
+\includegraphics[width=0.8\textwidth]{1.png}
+
+\subsection{BVH Intersection}
+
+\includegraphics[width=0.8\textwidth]{2.png}
+
+\subsection{Final}
+
+\includegraphics[width=0.8\textwidth]{3.jpg}
+
+\end{document}

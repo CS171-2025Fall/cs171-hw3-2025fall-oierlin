@@ -113,7 +113,7 @@ Vec3f IntersectionTestIntegrator::Li(
       //
       // You should update ray = ... with the spawned ray
       Float pdf;
-      Vec3f bsdf_value = interaction.bsdf->sample(interaction, sampler, &pdf);
+      interaction.bsdf->sample(interaction, sampler, &pdf);
       ray = interaction.spawnRay(interaction.wi);
       continue;
     }

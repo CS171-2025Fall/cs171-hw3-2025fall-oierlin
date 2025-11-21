@@ -210,16 +210,7 @@ use_surface_area_heuristic:
     //
     // You can then set @see BVHTree::hprofile to ESurfaceAreaHeuristic to
     // enable this feature.
-    split = span_left + count / 2;
-    std::nth_element(nodes.begin() + span_left, nodes.begin() + split,
-        nodes.begin() + span_right,
-        [dim](const NodeType &a, const NodeType &b) {
-          AABB aabb_a      = a.getAABB();
-          AABB aabb_b      = b.getAABB();
-          Vec3f centroid_a = (aabb_a.low_bnd + aabb_a.upper_bnd) * 0.5f;
-          Vec3f centroid_b = (aabb_b.low_bnd + aabb_b.upper_bnd) * 0.5f;
-          return centroid_a[dim] < centroid_b[dim];
-        });
+    UNIMPLEMENTED;
   }
 
   // Build the left and right subtree

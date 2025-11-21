@@ -63,6 +63,14 @@ void IntersectionTestIntegrator::render(ref<Camera> camera, ref<Scene> scene) {
         // assert(pixel_sample.y >= dy && pixel_sample.y <= dy + 1);
         // const Vec3f &L = Li(scene, ray, sampler);
         // camera->getFilm()->commitSample(pixel_sample, L);
+        const Vec2f &pixel_sample = sampler.getPixelSample();
+        Float sample_x = static_cast<Float>(dx) + pixel_sample.x;
+        Float sample_y = static_cast<Float>(dy) + pixel_sample.y;
+        auto ray = camera->generateDifferentialRay(sample_x, sample_y);
+        assert(pixel_sample.x >= dx && pixel_sample.x <= dx + 1);
+        assert(pixel_sample.y >= dy && pixel_sample.y <= dy + 1);
+        const Vec3f &L = Li(scene, ray, sampler);
+        camera->getFilm()->commitSample(pixel_sample, L);
       }
     }
   }
@@ -71,6 +79,7 @@ void IntersectionTestIntegrator::render(ref<Camera> camera, ref<Scene> scene) {
 Vec3f IntersectionTestIntegrator::Li(
     ref<Scene> scene, DifferentialRay &ray, Sampler &sampler) const {
   Vec3f color(0.0);
+  Vec3f throughput(1.0);
 
   // Cast a ray until we hit a non-specular surface or miss
   // Record whether we have found a diffuse surface
@@ -104,7 +113,10 @@ Vec3f IntersectionTestIntegrator::Li(
       // @see SurfaceInteraction::spawnRay
       //
       // You should update ray = ... with the spawned ray
-      UNIMPLEMENTED;
+      Float pdf;
+      Vec3f bsdf_value = interaction.bsdf->sample(interaction, sampler, &pdf);
+      throughput *= bsdf_value;
+      ray = interaction.spawnRay(interaction.wi);
       continue;
     }
 
@@ -148,7 +160,11 @@ Vec3f IntersectionTestIntegrator::directLighting(
   //
   //    You can use iteraction.p to get the intersection position.
   //
-  UNIMPLEMENTED;
+  SurfaceInteraction shadow_interaction;
+  bool occluded = scene->intersect(test_ray, shadow_interaction);
+  if (occluded && Norm(shadow_interaction.p - interaction.p) < dist_to_light) {
+    return color;
+  }
 
   // Not occluded, compute the contribution using perfect diffuse diffuse model
   // Perform a quick and dirty check to determine whether the BSDF is ideal
@@ -170,7 +186,7 @@ Vec3f IntersectionTestIntegrator::directLighting(
 
     // You should assign the value to color
     // color = ...
-    UNIMPLEMENTED;
+    color = bsdf->evaluate(interaction) * cos_theta;
   }
 
   return color;

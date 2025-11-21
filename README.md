@@ -1,7 +1,7 @@
 # Assignment 4: Global Illumination
 
-Name:  
-Student ID:  
+Name:  林迦勒
+Student ID:   2022533043
 
 **Please write your Chinese name and your student ID in this README.**
 

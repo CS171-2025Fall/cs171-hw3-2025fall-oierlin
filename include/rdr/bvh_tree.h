@@ -143,7 +143,7 @@ typename BVHTree<_>::IndexType BVHTree<_>::build(
   // @see span_left: The left index of the current span
   // @see span_right: The right index of the current span
   //
-  /* if ( */ UNIMPLEMENTED; /* ) */
+  if (depth >= CUTOFF_DEPTH || (span_right - span_left) <= 2)
   {
     // create leaf node
     const auto &node = nodes[span_left];
@@ -180,8 +180,19 @@ use_median_heuristic:
     // [span_left, split) are less than those in [split, span_right)
     //
     // You may find `std::nth_element` useful here.
-
-    UNIMPLEMENTED;
+    
+    std::nth_element(
+        nodes.begin() + span_left,
+        nodes.begin() + split,
+        nodes.begin() + span_right,
+        [dim](const NodeType &a, const NodeType &b) {
+          AABB aabb_a = a.getAABB();
+          AABB aabb_b = b.getAABB();
+          Vec3f centroid_a = (aabb_a.low_bnd + aabb_a.upper_bnd) * 0.5f;
+          Vec3f centroid_b = (aabb_b.low_bnd + aabb_b.upper_bnd) * 0.5f;
+          return centroid_a[dim] < centroid_b[dim];
+        }
+    );
 
     // clang-format on
   } else if (hprofile == EHeuristicProfile::ESurfaceAreaHeuristic) {
@@ -199,7 +210,16 @@ use_surface_area_heuristic:
     //
     // You can then set @see BVHTree::hprofile to ESurfaceAreaHeuristic to
     // enable this feature.
-    UNIMPLEMENTED;
+    split = span_left + count / 2;
+    std::nth_element(nodes.begin() + span_left, nodes.begin() + split,
+        nodes.begin() + span_right,
+        [dim](const NodeType &a, const NodeType &b) {
+          AABB aabb_a      = a.getAABB();
+          AABB aabb_b      = b.getAABB();
+          Vec3f centroid_a = (aabb_a.low_bnd + aabb_a.upper_bnd) * 0.5f;
+          Vec3f centroid_b = (aabb_b.low_bnd + aabb_b.upper_bnd) * 0.5f;
+          return centroid_a[dim] < centroid_b[dim];
+        });
   }
 
   // Build the left and right subtree

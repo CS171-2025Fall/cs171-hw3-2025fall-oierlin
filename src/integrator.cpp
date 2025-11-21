@@ -64,8 +64,8 @@ void IntersectionTestIntegrator::render(ref<Camera> camera, ref<Scene> scene) {
         // const Vec3f &L = Li(scene, ray, sampler);
         // camera->getFilm()->commitSample(pixel_sample, L);
         const Vec2f &pixel_sample = sampler.getPixelSample();
-        Float sample_x = static_cast<Float>(dx) + pixel_sample.x;
-        Float sample_y = static_cast<Float>(dy) + pixel_sample.y;
+        Float sample_x = pixel_sample.x;
+        Float sample_y = pixel_sample.y;
         auto ray = camera->generateDifferentialRay(sample_x, sample_y);
         assert(pixel_sample.x >= dx && pixel_sample.x <= dx + 1);
         assert(pixel_sample.y >= dy && pixel_sample.y <= dy + 1);
@@ -79,7 +79,6 @@ void IntersectionTestIntegrator::render(ref<Camera> camera, ref<Scene> scene) {
 Vec3f IntersectionTestIntegrator::Li(
     ref<Scene> scene, DifferentialRay &ray, Sampler &sampler) const {
   Vec3f color(0.0);
-  Vec3f throughput(1.0);
 
   // Cast a ray until we hit a non-specular surface or miss
   // Record whether we have found a diffuse surface
@@ -115,7 +114,6 @@ Vec3f IntersectionTestIntegrator::Li(
       // You should update ray = ... with the spawned ray
       Float pdf;
       Vec3f bsdf_value = interaction.bsdf->sample(interaction, sampler, &pdf);
-      throughput *= bsdf_value;
       ray = interaction.spawnRay(interaction.wi);
       continue;
     }
